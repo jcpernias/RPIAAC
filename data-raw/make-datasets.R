@@ -4,6 +4,7 @@ library(stringr)
 library(readxl)
 library(readr)
 library(rvest)
+library(tidyr)
 
 # -----------------------------------------------------------------------------
 # Utility functions
