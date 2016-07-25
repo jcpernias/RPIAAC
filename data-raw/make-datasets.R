@@ -5,24 +5,42 @@ library(readxl)
 library(readr)
 library(rvest)
 
-#-------------------------------------------------------------
-# Codebook
-# Download the PIAAC codebook
+# -----------------------------------------------------------------------------
+# Utility functions
+# Download a file unless a local copy already exists
+download_if_absent <- function(url, dest, force = FALSE) {
+  absent <- !file.exists(dest)
+  if (force && !absent) {
+    file.remove(dest)
+    absent <- TRUE
+  }
+  if(absent)
+    GET(url, write_disk(dest), progress())
+}
 
-# The name of the file
-cb_name <-
-  'International Codebook_PIAAC Public-use File (PUF) Variables and Values.xlsx'
 
-# The place where it lives
-cb_url_root <- 'http://www.oecd.org/site/piaac/'
+# -----------------------------------------------------------------------------
+# Download metadata files
 
-# Where the local copy is stored
+# PIAAC codebook
+cb_url <-
+  paste0("http://www.oecd.org/site/piaac/", URLencode(
+    "International Codebook_PIAAC Public-use File (PUF) Variables and Values.xlsx"))
+
+# Missing variables by country
+miss_vars_url <-
+  "http://www.oecd.org/skills/piaac/List_of_missing_variables_in_PUF_by_country.xls"
+
+# Where the local copies are stored
 cb_file <- file.path('data-raw', 'codebook.xlsx')
+miss_vars_file <- file.path('data-raw', 'missing-vars.xls')
 
-# Download unless a local copy already exists
-file.exists(cb_file) ||
-  GET(paste0(cb_url_root, URLencode(cb_name)),
-      write_disk(cb_file), progress())
+download_if_absent(cb_url, cb_file)
+download_if_absent(miss_vars_url, miss_vars_file)
+
+
+# -----------------------------------------------------------------------------
+# Codes for missing values
 
 # Read codebook sheet 'Values'
 cb_values <- read_excel(cb_file, sheet = 'Values')
@@ -40,7 +58,25 @@ miss <- (cb_values %>%
 miss <- c(miss, 'Z')
 
 
-# Read codebook sheet 'Variables': Drop column 'Link to values'
+# -----------------------------------------------------------------------------
+# Missing variables by country
+
+# Read info in the "all data" sheet.
+# There are some extra rows in that sheet: drop them.
+# In the end, we get a data frame with only two
+# columns: Country and (variable) Name
+miss_vars <- read_excel(miss_vars_file, sheet = "all data",
+                        col_types = rep("text", 35)) %>%
+  filter(!is.na(Domain)) %>%
+  gather(Country, missing, aut:tur, na.rm = TRUE) %>%
+  select(Name = `Variable name`, Country)
+
+
+# -----------------------------------------------------------------------------
+# Variables to store and their type
+
+
+# Read codebook sheet 'Variables': Drop columns 'Link to values' and following.
 cb_vars <- read_excel(cb_file, sheet = 'Variables')[1:10]
 
 # Drop task results variables
@@ -51,10 +87,13 @@ task_vars <- (cb_vars %>%
 
 # Conversion of PIAAC types to readr column types
 type_codes <- function(type, width) {
+  # Table to convert PIAAC types to readr type codes
   conv <- c('Numeric/floating point' = 'd',
             'Integer' = 'i',
             'String/character (Unicode)' = 'c')
   code <- conv[type]
+
+  # Don't use interger type if a field width is greater than 9
   idx <- which(code == 'i' & width > 9)
   if (length(idx))
     code[idx] <- 'd'
@@ -66,8 +105,7 @@ other_vars <- anti_join(cb_vars, task_vars, by = "Name") %>%
   mutate(cols=type_codes(Type, Width)) %>%
   select(Name, cols)
 
-all_vars <- bind_rows(task_vars, other_vars)
-col_types <- do.call(cols_only, setNames(as.list(all_vars$cols), all_vars$Name))
+var_types <- bind_rows(task_vars, other_vars)
 
 
 # -----------------------------------------------------------------------
@@ -86,6 +124,14 @@ country_data <- function(puf) {
   country <- str_sub(puf, 4, 6)
   url <- paste(PIAAC_URL, puf, sep = "/")
   dest <- file.path('data', paste0(country, ".rda"))
+
+  # Do not include missing variables
+  vt <- var_types
+  idx <- which(str_to_lower(vt$Name)
+               %in% (miss_vars %>% filter(Country == country))$Name)
+  vt[idx, 2] <- '_'
+  col_types <- do.call(cols_only, setNames(as.list(vt$cols), vt$Name))
+
   assign(country, read_csv(content(GET(url), "raw"),
                            na = miss, col_types = col_types))
   save(list=country, file=dest, compress="xz")
