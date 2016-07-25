@@ -1,0 +1,9 @@
+Package: RPIAAC
+Type: Package
+Title: Datasets from PIAAC
+Version: 0.0.9000
+Authors@R: person("José", "Pernías", email = "jcpernias@gmail.com", role = c("aut", "cre"))
+Description: This package provides datasets from PIAAC.
+License: MIT + file LICENSE
+LazyData: TRUE
+RoxygenNote: 5.0.1
