@@ -7,3 +7,5 @@ Description: This package provides datasets from PIAAC.
 License: MIT + file LICENSE
 LazyData: TRUE
 RoxygenNote: 5.0.1
+URL: http://github.com/jcpernias/RPIAAC
+BugReports: http://github.com/jcpernias/RPIAAC/issues
