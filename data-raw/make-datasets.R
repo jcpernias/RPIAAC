@@ -165,6 +165,8 @@ missing_variables <- build_missing_variables_table(miss_vars_file)
 idx <- match(missing_variables$Name, str_to_lower(variables$Name))
 missing_variables$Name <- variables$Name[idx]
 
+use_data(missing_variables, variables, values, internal = TRUE)
+
 # URL where PIAAC data files are stored
 PIAAC_URL <- 'http://vs-web-fs-1.oecd.org/piaac/puf-data/CSV'
 csv_names <- html_text(html_nodes(read_html(PIAAC_URL), "a"), trim = TRUE)
