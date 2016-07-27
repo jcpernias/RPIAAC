@@ -1,10 +1,12 @@
 library(httr)
+library(rvest)
 library(dplyr)
 library(stringr)
 library(readxl)
 library(readr)
-library(rvest)
 library(tidyr)
+library(digest)
+
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -20,8 +22,122 @@ download_if_absent <- function(url, dest, force = FALSE) {
 }
 
 
+# Build a table with details of each variable.
+# Retain the PIAAC Name, Label, Level, and Domain.
+# REcode Type with codes as those use by the readr package:
+# - 'i': Integer variables
+# - 'd': floating point variables
+# - 'c': character variables
+# - '_': ignored variables
+build_variables_table <- function (path) {
+  # Read codebook sheet 'Variables': Drop columns 'Link to values' and following.
+  vars <- read_excel(path, sheet = 'Variables')[1:10]
+
+  # Variables to retain
+  idx <- str_detect(vars$Domain, regex("^(Background|Sampling|Scale|Not)"))
+
+  # Variables to drop
+  drop_vars <- vars[!idx, ] %>% mutate(Type = "_")
+
+  sel_vars <- vars[idx, ]
+
+  # String variables
+  str_vars <- sel_vars %>%
+    filter(Type == 'String/character (Unicode)') %>%
+    mutate(Type = "c")
+
+  # Integer variables
+  int_vars <- sel_vars %>%
+    filter(Type == 'Integer', Width < 10) %>%
+    mutate(Type = "i")
+
+  # Floating point variables
+  dbl_vars <- sel_vars %>%
+    filter(Type == 'Numeric/floating point' |
+             (Type == "Integer" & Width >= 10)) %>%
+    mutate(Type = "d")
+
+  # Merge all dataframes
+  bind_rows(drop_vars, str_vars, int_vars, dbl_vars) %>%
+    select(Name, Label, Type, Level, Domain)
+}
+
+# Return a list with three elements:
+# - missing_codes: the codes used for missing values in the csv files.
+# - codes: a dataframe with coding schemes
+# - variable_code: a table that associates variables and coding schemes
+build_values_tables <- function(path) {
+  # Read codebook sheet 'Values'
+  cb_values <- read_excel(path, sheet = 'Values')
+
+  # Missing value codes -------------------------------------------------
+  # The missing values in the CSV files are recorded as the SAS codes
+  # without the leading dot.
+  missing_codes <- cb_values %>%
+    filter(`Value Type` == 'Missing', !is.na(`Value (SAS)`)) %>%
+    distinct(`Value (SAS)`) %>%
+    transmute(Miss = substr(`Value (SAS)`, 2, 2))
+
+  # Apparently, variable CTRYQUAL also uses Z as a missing value. This is
+  # not documented in the codebook
+  missing_codes <- c(missing_codes$Miss, 'Z')
+
+  # Variable codings ----------------------------------------------------
+  # Filter out missing values
+  valids <- cb_values %>%
+    filter(`Value Type` != 'Missing') %>%
+    select(Name = `Variable Name`, Label = `Value Label`, Value = `Value (SAS)`)
+
+  # Use an environment as a hash table
+  tb_env <- new.env(parent = emptyenv())
+
+  # 1. Get the values scheme for a variable.
+  # 2. Compute the hash value for that scheme.
+  # 3. Add the scheme to the hash table if it is not already included.
+  # 4. Return the hash.
+  handle_var <- function(var) {
+    tb <- valids %>% filter(Name ==  var) %>% select(Label, Value)
+    md5 <- digest(tb)
+    if(!exists(md5, where = tb_env))
+      assign(md5, tb, envir = tb_env)
+    return(md5)
+  }
+
+  # Compute the hash code for each variable and update if necessary
+  # the hashtable.
+  coded_vars <- (valids %>% distinct(Name))$Name
+  var_hashes <- vapply(coded_vars, handle_var, "", USE.NAMES = FALSE)
+
+  # Get the hashes in the hash table
+  hashes <- unique(var_hashes)
+
+  # Associate each var with code scheme
+  variable_code <- tibble(Name = coded_vars, ID = match(var_hashes, hashes))
+
+  # Transform the hashtable into a dataframe
+  codes <- do.call(bind_rows, lapply(seq_along(hashes), function (i) {
+    get(hashes[i], envir = tb_env) %>% mutate(ID = i)
+  }))
+
+  list(missing_codes = missing_codes, codes = codes, variable_code = variable_code)
+}
+
+
 # -----------------------------------------------------------------------------
-# Download metadata files
+# Missing variables by country
+
+# Returns a dataframe that holds the missing variables
+# in each country dataset.
+build_missing_variables_table <- function(path) {
+  # Read info in the "all data" sheet.
+  # There are some extra rows in that sheet: drop them.
+  miss_vars <- read_excel(path, sheet = "all data",
+                          col_types = rep("text", 35)) %>%
+    filter(!is.na(Domain)) %>%
+    gather(Country, missing, aut:tur, na.rm = TRUE) %>%
+    select(Name = `Variable name`, Country)
+}
+
 
 # PIAAC codebook
 cb_url <-
@@ -39,106 +155,46 @@ miss_vars_file <- file.path('data-raw', 'missing-vars.xls')
 download_if_absent(cb_url, cb_file)
 download_if_absent(miss_vars_url, miss_vars_file)
 
+# Build the PIAAC metadata tables
+variables <- build_variables_table(cb_file)
+values <- build_values_tables(cb_file)
+missing_variables <- build_missing_variables_table(miss_vars_file)
 
-# -----------------------------------------------------------------------------
-# Codes for missing values
-
-# Read codebook sheet 'Values'
-cb_values <- read_excel(cb_file, sheet = 'Values')
-
-# The missing values in the CSV files are recorded as the SAS codes
-# without the leading dot.
-miss <- (cb_values %>%
-           filter(`Value Type` == 'Missing', !is.na(`Value (SAS)`)) %>%
-           select(Missing = `Value (SAS)`) %>%
-           distinct(Missing) %>%
-           transmute(substr(Missing, 2, 2)))[[1]]
-
-# Apparently, variable CTRYQUAL also uses Z as a missing value. This is
-# not documented in the codebook
-miss <- c(miss, 'Z')
-
-
-# -----------------------------------------------------------------------------
-# Missing variables by country
-
-# Read info in the "all data" sheet.
-# There are some extra rows in that sheet: drop them.
-# In the end, we get a data frame with only two
-# columns: Country and (variable) Name
-miss_vars <- read_excel(miss_vars_file, sheet = "all data",
-                        col_types = rep("text", 35)) %>%
-  filter(!is.na(Domain)) %>%
-  gather(Country, missing, aut:tur, na.rm = TRUE) %>%
-  select(Name = `Variable name`, Country)
-
-
-# -----------------------------------------------------------------------------
-# Variables to store and their type
-
-
-# Read codebook sheet 'Variables': Drop columns 'Link to values' and following.
-cb_vars <- read_excel(cb_file, sheet = 'Variables')[1:10]
-
-# Drop task results variables
-task_vars <- (cb_vars %>%
-                filter(str_detect(Domain, regex('\\(paper|computer\\)'))) %>%
-                mutate(cols = "_") %>%
-                select(Name, cols))
-
-# Conversion of PIAAC types to readr column types
-type_codes <- function(type, width) {
-  # Table to convert PIAAC types to readr type codes
-  conv <- c('Numeric/floating point' = 'd',
-            'Integer' = 'i',
-            'String/character (Unicode)' = 'c')
-  code <- conv[type]
-
-  # Don't use interger type if a field width is greater than 9
-  idx <- which(code == 'i' & width > 9)
-  if (length(idx))
-    code[idx] <- 'd'
-  code
-}
-
-other_vars <- anti_join(cb_vars, task_vars, by = "Name") %>%
-  select(Name, Type, Width) %>%
-  mutate(cols=type_codes(Type, Width)) %>%
-  select(Name, cols)
-
-var_types <- bind_rows(task_vars, other_vars)
-
-
-# -----------------------------------------------------------------------
-# Public use files
+# Variable names in missing variables file are lower case.
+# Capitalize them as in the codebook.
+idx <- match(missing_variables$Name, str_to_lower(variables$Name))
+missing_variables$Name <- variables$Name[idx]
 
 # URL where PIAAC data files are stored
 PIAAC_URL <- 'http://vs-web-fs-1.oecd.org/piaac/puf-data/CSV'
-nodes <- html_nodes(read_html(PIAAC_URL), "a")
-puf_names <- html_text(nodes, trim = TRUE)
-puf_names <- puf_names[str_detect(puf_names, regex('\\.csv$'))]
+csv_names <- html_text(html_nodes(read_html(PIAAC_URL), "a"), trim = TRUE)
+csv_names <- csv_names[str_detect(csv_names, regex('\\.csv$'))]
 
 if(!dir.exists('data'))
   dir.create('data')
 
-country_data <- function(puf) {
-  country <- str_sub(puf, 4, 6)
-  url <- paste(PIAAC_URL, puf, sep = "/")
+country_data <- function(csv) {
+  # Variables to read and their types
+  build_col_types <- function(country) {
+    types <- setNames(variables$Type, variables$Name)
+    miss_vars <- missing_variables[missing_variables$Country == country, ]$Name
+    types[miss_vars] <- "_"
+    do.call(cols_only, as.list(types[types != "_"]))
+  }
+
+  country <- str_sub(csv, 4, 6)
+  url <- paste(PIAAC_URL, csv, sep = "/")
   dest <- file.path('data', paste0(country, ".rda"))
 
-  # Do not include missing variables
-  vt <- var_types
-  idx <- which(str_to_lower(vt$Name)
-               %in% (miss_vars %>% filter(Country == country))$Name)
-  vt[idx, 2] <- '_'
-  col_types <- do.call(cols_only, setNames(as.list(vt$cols), vt$Name))
+  data <- read_csv(content(GET(url), "raw"),
+                   na = values$missing_codes,
+                   col_types = build_col_types(country))
 
-  assign(country, read_csv(content(GET(url), "raw"),
-                           na = miss, col_types = col_types))
+  assign(country, data)
   save(list=country, file=dest, compress="xz")
 }
 
-for (puf in puf_names) {
-  cat(puf, '\n')
-  country_data(puf)
+for (csv in csv_names) {
+  cat(csv, '\n')
+  country_data(csv)
 }
