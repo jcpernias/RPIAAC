@@ -4,7 +4,7 @@
 \name{nzl}
 \alias{nzl}
 \title{New Zealand}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 6177 rows and 606 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 6177 rows and 562 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

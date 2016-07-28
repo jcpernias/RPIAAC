@@ -4,7 +4,7 @@
 \name{aut}
 \alias{aut}
 \title{Austria}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5130 rows and 484 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5130 rows and 442 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

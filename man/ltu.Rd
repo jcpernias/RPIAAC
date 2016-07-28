@@ -4,7 +4,7 @@
 \name{ltu}
 \alias{ltu}
 \title{Lithuania}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5093 rows and 605 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5093 rows and 561 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

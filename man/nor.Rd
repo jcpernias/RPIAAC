@@ -4,7 +4,7 @@
 \name{nor}
 \alias{nor}
 \title{Norway}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5128 rows and 598 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5128 rows and 554 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

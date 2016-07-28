@@ -165,6 +165,17 @@ missing_variables <- build_missing_variables_table(miss_vars_file)
 idx <- match(missing_variables$Name, str_to_lower(variables$Name))
 missing_variables$Name <- variables$Name[idx]
 
+# Drop unused variables from metadata tables
+idx <- variables$Type == '_'
+ignore_vars <- variables$Name[idx]
+variables <- variables[!idx, ]
+idx <- missing_variables$Name %in% ignore_vars
+missing_variables <- missing_variables[!idx, ]
+idx <- values$variable_code$Name %in% ignore_vars
+values$variable_code <- values$variable_code[!idx, ]
+idx <- values$codes$ID %in% unique(values$variable_code$ID)
+values$codes <- values$codes[idx, ]
+
 use_data(missing_variables, variables, values, internal = TRUE)
 
 # URL where PIAAC data files are stored

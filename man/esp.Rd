@@ -4,7 +4,7 @@
 \name{esp}
 \alias{esp}
 \title{Spain}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 6055 rows and 595 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 6055 rows and 551 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

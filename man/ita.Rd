@@ -4,7 +4,7 @@
 \name{ita}
 \alias{ita}
 \title{Italy}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 4621 rows and 566 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 4621 rows and 535 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

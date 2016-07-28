@@ -4,7 +4,7 @@
 \name{swe}
 \alias{swe}
 \title{Sweden}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 4469 rows and 581 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 4469 rows and 537 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

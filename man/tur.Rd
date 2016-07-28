@@ -4,7 +4,7 @@
 \name{tur}
 \alias{tur}
 \title{Turkey}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5277 rows and 563 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5277 rows and 519 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

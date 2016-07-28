@@ -4,7 +4,7 @@
 \name{can}
 \alias{can}
 \title{Canada}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 26683 rows and 471 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 26683 rows and 427 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

@@ -4,7 +4,7 @@
 \name{est}
 \alias{est}
 \title{Estonia}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 7632 rows and 586 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 7632 rows and 542 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

@@ -4,7 +4,7 @@
 \name{usa}
 \alias{usa}
 \title{United States}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5010 rows and 505 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5010 rows and 466 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

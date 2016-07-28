@@ -4,7 +4,7 @@
 \name{cyp}
 \alias{cyp}
 \title{Cyprus}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5053 rows and 588 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5053 rows and 544 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

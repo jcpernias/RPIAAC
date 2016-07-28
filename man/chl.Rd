@@ -4,7 +4,7 @@
 \name{chl}
 \alias{chl}
 \title{Chile}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5212 rows and 606 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5212 rows and 562 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

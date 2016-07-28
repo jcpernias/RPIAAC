@@ -4,7 +4,7 @@
 \name{deu}
 \alias{deu}
 \title{Germany}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5465 rows and 517 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5465 rows and 473 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

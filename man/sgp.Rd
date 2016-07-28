@@ -4,7 +4,7 @@
 \name{sgp}
 \alias{sgp}
 \title{Singapore}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5468 rows and 560 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5468 rows and 516 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

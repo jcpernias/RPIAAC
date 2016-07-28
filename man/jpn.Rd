@@ -4,7 +4,7 @@
 \name{jpn}
 \alias{jpn}
 \title{Japan}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5278 rows and 593 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5278 rows and 554 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

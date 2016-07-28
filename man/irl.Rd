@@ -4,7 +4,7 @@
 \name{irl}
 \alias{irl}
 \title{Ireland}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5983 rows and 580 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5983 rows and 536 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }

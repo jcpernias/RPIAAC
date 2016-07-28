@@ -4,7 +4,7 @@
 \name{pol}
 \alias{pol}
 \title{Poland}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 9366 rows and 602 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 9366 rows and 558 columns.}
 \source{
 \url{http://www.oecd.org/skills/piaac/}
 }
