@@ -1,3 +1,20 @@
+#' Coding scheme for a PIAAC variable
+#'
+#' @param var Name of a variable
+#' @return A dataframe with the coding scheme
+#' @examples
+#' variable_coding("AGE_R")
+#' variable_coding("AGE5LFS")
+#' @export
+variable_coding <- function(var) {
+  codeidx <- which(values$variable_code$Name == var)
+  if(!length(codeidx))
+    return(NULL)
+
+  values$codes[values$codes$ID == values$variable_code$ID[codeidx],
+               c("Label", "Value")]
+}
+
 #' Return information on PIAAC variables
 #'
 #' @param var Name of a variable
@@ -16,12 +33,7 @@ variable_info <- function(var) {
 
   miss <- missing_variables[missing_variables$Name == var, ]$Country
 
-  codeidx <- which(values$variable_code$Name == var)
-  if(length(codeidx))
-    codes <- values$codes[values$codes$ID == values$variable_code$ID[codeidx],
-                          c("Label", "Value")]
-  else
-    codes <- NULL
+  codes <- variable_coding(var)
 
   ret$Name <- varinfo$Name
   ret$Label <- varinfo$Label
@@ -30,3 +42,4 @@ variable_info <- function(var) {
   ret$Missing <- miss
   ret
 }
+
