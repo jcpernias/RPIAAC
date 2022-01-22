@@ -17,19 +17,19 @@ download_if_absent <- function(url, dest, force = FALSE) {
     file.remove(dest)
     absent <- TRUE
   }
-  if(absent)
+  if (absent)
     GET(url, write_disk(dest), progress())
 }
 
 
 # Build a table with details of each variable.
 # Retain the PIAAC Name, Label, Level, and Domain.
-# REcode Type with codes as those use by the readr package:
+# Recode Type with codes as those use by the readr package:
 # - 'i': Integer variables
 # - 'd': floating point variables
 # - 'c': character variables
 # - '_': ignored variables
-build_variables_table <- function (path) {
+build_variables_table <- function(path) {
   # Read codebook sheet 'Variables': Drop columns 'Link to values' and following.
   vars <- read_excel(path, sheet = 'Variables')[1:10]
 
@@ -98,7 +98,7 @@ build_values_tables <- function(path) {
   handle_var <- function(var) {
     tb <- valids %>% filter(Name ==  var) %>% select(Label, Value)
     md5 <- digest(tb)
-    if(!exists(md5, where = tb_env))
+    if (!exists(md5, where = tb_env))
       assign(md5, tb, envir = tb_env)
     return(md5)
   }
@@ -115,7 +115,7 @@ build_values_tables <- function(path) {
   variable_code <- tibble(Name = coded_vars, ID = match(var_hashes, hashes))
 
   # Transform the hashtable into a dataframe
-  codes <- do.call(bind_rows, lapply(seq_along(hashes), function (i) {
+  codes <- do.call(bind_rows, lapply(seq_along(hashes), function(i) {
     get(hashes[i], envir = tb_env) %>% mutate(ID = i)
   }))
 
@@ -183,7 +183,7 @@ PIAAC_URL <- 'http://vs-web-fs-1.oecd.org/piaac/puf-data/CSV'
 csv_names <- html_text(html_nodes(read_html(PIAAC_URL), "a"), trim = TRUE)
 csv_names <- csv_names[str_detect(csv_names, regex('\\.csv$'))]
 
-if(!dir.exists('data'))
+if (!dir.exists('data'))
   dir.create('data')
 
 country_data <- function(csv) {
@@ -204,7 +204,7 @@ country_data <- function(csv) {
                    col_types = build_col_types(country))
 
   assign(country, data)
-  save(list=country, file=dest, compress="xz")
+  save(list = country, file = dest, compress = "xz")
 }
 
 for (csv in csv_names) {
